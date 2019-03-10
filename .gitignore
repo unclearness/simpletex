@@ -2,6 +2,7 @@
 /win_build/
 /bin/
 /lib/
+/data/fountain_all
 
 # Prerequisites
 *.d

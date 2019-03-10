@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(cmake_sample LANGUAGES CXX VERSION 0.0.1 DESCRIPTION "cmake sample")
+set(PROJECT_NAME simple-texturing)
+project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.0.1 DESCRIPTION "simple texture mapping")
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
@@ -11,48 +12,93 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 # .dll and .exe
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin) 
 
-# .exe
-#set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-
 if (WIN32)
+# option for Visual Studio
 # -EHsc (enable proper Exxeption Handling) needs to avoid C4530
 # -Wall is too noisy so that set -W4. 
 # https://docs.microsoft.com/en-us/cpp/build/reference/compiler-option-warning-level?view=vs-2017
 # "However, for a new project, it may be best to use /W4 in all compilations;
 # this will ensure the fewest possible hard-to-find code defects."
 set(CMAKE_CXX_FLAGS "-std=c++14 -W4 -EHsc")
+
+else()
+# g++ option for *nix
+set(CMAKE_CXX_FLAGS  "-std=c++14 -Wall -O2")
+
 endif()
 
-# Search package example: OpenGL
-find_package(OpenGL REQUIRED)
+# For OpenMP
+find_package(OpenMP REQUIRED)
+if(OpenMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
-# global include setting
-#include_directories(
-#    include
-#    src/include
-#    third_party)
-
-
-# sample to make library from source
-# SHARED: .dll and .lib
-# STATIC: .lib only
-add_library(lib_public
+set(PUBLIC_LIB_NAME ${PROJECT_NAME})
+add_library(${PUBLIC_LIB_NAME}
     STATIC
-    src/public_lib.cpp
-    src/private_lib.cpp
+    include/common.h
+    include/visibility_tester.h
+	include/vertex_colorizer.h
+    include/common.h
+    include/camera.h
+    include/pose.h
+    include/mesh.h
+    include/image.h
+    include/log.h
+
+    src/visibility_tester.cc
+	src/vertex_colorizer.cc
+    src/camera.cc
+    src/pose.cc
+    src/mesh.cc
+    src/image.cc
+    src/timer.h
+    src/log.cc
 )
 
-target_include_directories(lib_public PRIVATE include)
-target_include_directories(lib_public PRIVATE src/include)
-target_include_directories(lib_public PRIVATE third_party)
+# set folders
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set_target_properties(lib_public PROPERTIES VERSION ${PROJECT_VERSION})
+SOURCE_GROUP("Public header files" FILES
+    include/common.h
+    include/visibility_tester.h
+	include/vertex_colorizer.h
+    include/camera.h
+    include/pose.h
+    include/mesh.h
+    include/image.h
+    include/log.h
+)
 
-add_executable(cmake_sample_run
-    pc/main.cpp)
+SOURCE_GROUP("Private header files" FILES
+    src/timer.h
+)
 
-target_include_directories(cmake_sample_run PRIVATE include)
+SOURCE_GROUP("Source files" FILES
+    src/visibility_tester.cc
+	src/vertex_colorizer.cc
+    src/camera.cc
+    src/pose.cc
+    src/mesh.cc
+    src/image.cc
+    src/log.cc
+)
 
-target_link_libraries(cmake_sample_run
-    lib_public
+include_directories(${PUBLIC_LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party)
+include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party/nanort)
+include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party/glm)
+include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party/tinyobjloader)
+include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party/stb)
+
+set_target_properties(${PUBLIC_LIB_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
+
+set(EXAMPLES_EXE test_fountain)
+add_executable(${EXAMPLES_EXE}
+    test_fountain.cc)
+target_link_libraries(${EXAMPLES_EXE}
+    ${PUBLIC_LIB_NAME}
     )
+
+    

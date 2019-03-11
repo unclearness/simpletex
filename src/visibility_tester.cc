@@ -168,11 +168,15 @@ void VertexInfo::CalcStat() {
   std::vector<int> ids;
   std::vector<float> distances;
   std::vector<float> viewing_angles;
+  std::vector<float> inv_distances;
+  std::vector<float> inv_viewing_angles;
   for (auto& kf : visible_keyframes) {
     colors.push_back(kf.color);
     ids.push_back(kf.kf_id);
     distances.push_back(kf.distance);
     viewing_angles.push_back(kf.viewing_angle);
+    inv_distances.push_back(1.0f / kf.distance);
+    inv_viewing_angles.push_back(1.0f / kf.viewing_angle);
   }
 
   // min
@@ -195,8 +199,8 @@ void VertexInfo::CalcStat() {
   median_color = MedianColor(colors);
 
   // weighted average
-  mean_viewing_angle_color = WeightedAverage(colors, viewing_angles);
-  mean_distance_color = WeightedAverage(colors, distances);
+  mean_viewing_angle_color = WeightedAverage(colors, inv_viewing_angles);
+  mean_distance_color = WeightedAverage(colors, inv_distances);
 
   // printf("%f, %f\n", mean_viewing_angle, median_viewing_angle);
 }

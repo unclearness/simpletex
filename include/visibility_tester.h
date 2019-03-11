@@ -63,13 +63,17 @@ struct VertexInfo {
   int min_viewing_angle_id;
   glm::vec3 min_viewing_angle_color;
 
-  glm::vec3 mean_viewing_angle_color;  // weighted average by viewing angle
+  glm::vec3
+      mean_viewing_angle_color;  // weighted average by inverse viewing angle
+  glm::vec3
+      median_viewing_angle_color;  // weighted median by inverse viewing angle
 
   int min_distance_index;
   int min_distance_id;
   glm::vec3 min_distance_color;
 
-  glm::vec3 mean_distance_color;  // weighted average by distance
+  glm::vec3 mean_distance_color;    // weighted average by inverse distance
+  glm::vec3 median_distance_color;  // weighted median by inverse distance
 
   float mean_viewing_angle;
   float median_viewing_angle;

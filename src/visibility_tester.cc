@@ -96,6 +96,16 @@ glm::vec3 MedianColor(const std::vector<glm::vec3>& colors) {
   return median;
 }
 
+void NormalizeWeights(const std::vector<float>& weights,
+                      std::vector<float>* normalized_weights) {
+  std::copy(weights.begin(), weights.end(),
+            std::back_inserter(*normalized_weights));
+  float sum = std::accumulate(weights.begin(), weights.end(), 0.0f);
+  assert(sum > 0.000001);
+  std::for_each(normalized_weights->begin(), normalized_weights->end(),
+                [&](float& n) { n /= sum; });
+}
+
 template <typename T>
 T WeightedAverage(const std::vector<T>& data,
                   const std::vector<float>& weights) {
@@ -103,12 +113,7 @@ T WeightedAverage(const std::vector<T>& data,
   assert(data.size() == weights.size());
 
   std::vector<float> normalized_weights;
-  std::copy(weights.begin(), weights.end(),
-            std::back_inserter(normalized_weights));
-  float sum = std::accumulate(weights.begin(), weights.end(), 0.0f);
-  assert(sum > 0.000001);
-  std::for_each(normalized_weights.begin(), normalized_weights.end(),
-                [&](float& n) { n /= sum; });
+  NormalizeWeights(weights, &normalized_weights);
 
   T weighted_average(0);
   for (size_t i = 0; i < data.size(); i++) {
@@ -116,6 +121,37 @@ T WeightedAverage(const std::vector<T>& data,
   }
 
   return weighted_average;
+}
+
+template <typename T>
+T WeightedMedian(const std::vector<T>& data,
+                 const std::vector<float>& weights) {
+  assert(data.size() > 0);
+  assert(data.size() == weights.size());
+
+  std::vector<float> normalized_weights;
+  NormalizeWeights(weights, &normalized_weights);
+
+  std::vector<std::pair<float, T>> data_weights;
+  for (size_t i = 0; i < data.size(); i++) {
+    data_weights.push_back(std::make_pair(normalized_weights[i], data[i]));
+  }
+  std::sort(data_weights.begin(), data_weights.end(),
+            [](const std::pair<float, T>& a, const std::pair<float, T>& b) {
+              return a.first < b.first;
+            });
+
+  float weights_sum{0};
+  size_t index{0};
+  for (size_t i = 0; i < data_weights.size(); i++) {
+    weights_sum += data_weights[i].first;
+    if (weights_sum > 0.5f) {
+      index = i;
+      break;
+    }
+  }
+
+  return data_weights[index].second;
 }
 
 }  // namespace
@@ -202,7 +238,9 @@ void VertexInfo::CalcStat() {
   mean_viewing_angle_color = WeightedAverage(colors, inv_viewing_angles);
   mean_distance_color = WeightedAverage(colors, inv_distances);
 
-  // printf("%f, %f\n", mean_viewing_angle, median_viewing_angle);
+  // weighted median
+  median_viewing_angle_color = WeightedMedian(colors, inv_viewing_angles);
+  median_distance_color = WeightedMedian(colors, inv_distances);
 }
 
 FaceInfoPerKeyframe::FaceInfoPerKeyframe() {}

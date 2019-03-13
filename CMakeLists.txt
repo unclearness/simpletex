@@ -39,9 +39,9 @@ set(GLM_INSTALL_DIR "third_party/glm" CACHE PATH "glm installed directory")
 message("GLM_INSTALL_DIR: ${GLM_INSTALL_DIR}") 
 set(NANORT_INSTALL_DIR "third_party/nanort" CACHE PATH "NanoRT installed directory")
 message("NANORT_INSTALL_DIR: ${NANORT_INSTALL_DIR}") 
-set(STB_INSTALL_DIR "third_party/stb" CACHE PATH "stb intalled directory")
+set(STB_INSTALL_DIR "third_party/stb" CACHE PATH "stb installed directory")
 message("STB_INSTALL_DIR: ${STB_INSTALL_DIR}") 
-set(TINYOBJLOADER_INSTALL_DIR "third_party/tinyobjloader" CACHE PATH "tinyobjloader intalled directory")
+set(TINYOBJLOADER_INSTALL_DIR "third_party/tinyobjloader" CACHE PATH "tinyobjloader installed directory")
 message("TINYOBJLOADER_INSTALL_DIR: ${TINYOBJLOADER_INSTALL_DIR}")
 
 # switch for optional libraries

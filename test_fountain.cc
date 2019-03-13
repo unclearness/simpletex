@@ -13,6 +13,34 @@
 #include <utility>
 #include <vector>
 
+#ifdef SIMPLETEX_USE_TINYOBJLOADER
+#ifndef SIMPLETEX_TINYOBJLOADER_IMPLEMENTATION
+#define TINYOBJLOADER_IMPLEMENTATION
+#endif
+#include "tinyobjloader/tiny_obj_loader.h"
+#undef TINYOBJLOADER_IMPLEMENTATION
+#endif
+
+#ifdef SIMPLETEX_USE_STB
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#ifndef SIMPLETEX_STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#endif
+#include "stb/stb_image.h"
+#pragma warning(pop)
+#undef STB_IMAGE_IMPLEMENTATION
+
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#ifndef SIMPLETEX_STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#endif
+#include "stb/stb_image_write.h"
+#pragma warning(pop)
+#undef STB_IMAGE_WRITE_IMPLEMENTATION
+#endif
+
 #include "include//visibility_tester.h"
 #include "include/vertex_colorizer.h"
 

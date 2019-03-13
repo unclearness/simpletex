@@ -6,10 +6,13 @@
 #include "include/mesh.h"
 
 #include <fstream>
+#include <sstream>
 #include <random>
 
 #ifdef SIMPLETEX_USE_TINYOBJLOADER
+#ifdef SIMPLETEX_TINYOBJLOADER_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
+#endif
 #include "tinyobjloader/tiny_obj_loader.h"
 #endif
 
@@ -24,7 +27,7 @@ std::vector<std::string> Split(const std::string& s, char delim) {
   std::vector<std::string> elems;
   std::stringstream ss(s);
   std::string item;
-  while (getline(ss, item, delim)) {
+  while (std::getline(ss, item, delim)) {
     if (!item.empty()) {
       elems.push_back(item);
     }

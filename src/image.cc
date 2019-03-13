@@ -8,13 +8,17 @@
 #ifdef SIMPLETEX_USE_STB
 #pragma warning(push)
 #pragma warning(disable : 4100)
+#ifdef SIMPLETEX_STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
+#endif
 #include "stb/stb_image.h"
 #pragma warning(pop)
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
+#ifdef SIMPLETEX_STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#endif
 #include "stb/stb_image_write.h"
 #pragma warning(pop)
 #endif

@@ -42,7 +42,26 @@ message("NANORT_INSTALL_DIR: ${NANORT_INSTALL_DIR}")
 set(STB_INSTALL_DIR "third_party/stb" CACHE PATH "stb intalled directory")
 message("STB_INSTALL_DIR: ${STB_INSTALL_DIR}") 
 set(TINYOBJLOADER_INSTALL_DIR "third_party/tinyobjloader" CACHE PATH "tinyobjloader intalled directory")
-message("TINYOBJLOADER_INSTALL_DIR: ${TINYOBJLOADER_INSTALL_DIR}") 
+message("TINYOBJLOADER_INSTALL_DIR: ${TINYOBJLOADER_INSTALL_DIR}")
+
+# switch for optional libraries
+option(SIMPLETEX_USE_STB "Use stb to enable image i/o" ON)
+message("SIMPLETEX_USE_STB: ${SIMPLETEX_USE_STB}")
+if(SIMPLETEX_USE_STB)
+  add_definitions(-DSIMPLETEX_USE_STB)
+endif()
+
+option(SIMPLETEX_USE_TINYOBJLOADER "Use tinyobjloader to enable .obj input" ON)
+message("SIMPLETEX_USE_TINYOBJLOADER: ${SIMPLETEX_USE_TINYOBJLOADER}")
+if(SIMPLETEX_USE_TINYOBJLOADER)
+  add_definitions(-DSIMPLETEX_USE_TINYOBJLOADER)
+endif()
+
+option(SIMPLETEX_USE_OPENMP "Use OpenMP to enable parallelization" ON)
+message("SIMPLETEX_USE_OPENMP: ${SIMPLETEX_USE_OPENMP}")
+if(SIMPLETEX_USE_OPENMP)
+  add_definitions(-DSIMPLETEX_USE_OPENMP)
+endif()
 
 set(PUBLIC_LIB_NAME ${PROJECT_NAME})
 add_library(${PUBLIC_LIB_NAME}

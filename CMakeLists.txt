@@ -34,6 +34,16 @@ if(OpenMP_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+# third_party directries
+set(GLM_INSTALL_DIR "third_party/glm" CACHE PATH "glm installed directory")
+message("GLM_INSTALL_DIR: ${GLM_INSTALL_DIR}") 
+set(NANORT_INSTALL_DIR "third_party/nanort" CACHE PATH "NanoRT installed directory")
+message("NANORT_INSTALL_DIR: ${NANORT_INSTALL_DIR}") 
+set(STB_INSTALL_DIR "third_party/stb" CACHE PATH "stb intalled directory")
+message("STB_INSTALL_DIR: ${STB_INSTALL_DIR}") 
+set(TINYOBJLOADER_INSTALL_DIR "third_party/tinyobjloader" CACHE PATH "tinyobjloader intalled directory")
+message("TINYOBJLOADER_INSTALL_DIR: ${TINYOBJLOADER_INSTALL_DIR}") 
+
 set(PUBLIC_LIB_NAME ${PROJECT_NAME})
 add_library(${PUBLIC_LIB_NAME}
     STATIC
@@ -85,12 +95,12 @@ SOURCE_GROUP("Source files" FILES
     src/log.cc
 )
 
-include_directories(${PUBLIC_LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party)
-include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party/nanort)
-include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party/glm)
-include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party/tinyobjloader)
-include_directories(${PUBLIC_LIB_NAME} PRIVATE third_party/stb)
+include_directories(${PUBLIC_LIB_NAME} ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${PUBLIC_LIB_NAME} third_party)
+include_directories(${PUBLIC_LIB_NAME} ${NANORT_INSTALL_DIR})
+include_directories(${PUBLIC_LIB_NAME} ${GLM_INSTALL_DIR})
+include_directories(${PUBLIC_LIB_NAME} ${TINYOBJLOADER_INSTALL_DIR})
+include_directories(${PUBLIC_LIB_NAME} ${STB_INSTALL_DIR})
 
 set_target_properties(${PUBLIC_LIB_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 

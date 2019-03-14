@@ -53,8 +53,8 @@ struct FramedTransformation {
   int id1_;
   int id2_;
   int frame_;
-  glm::mat4 transformation_;
-  FramedTransformation(int id1, int id2, int f, glm::mat4 t)
+  Eigen::Matrix4d transformation_;
+  FramedTransformation(int id1, int id2, int f, Eigen::Matrix4d t)
       : id1_(id1), id2_(id2), frame_(f), transformation_(t) {}
 };
 
@@ -66,7 +66,7 @@ struct RGBDTrajectory {
     data_.clear();
     index_ = 0;
     int id1, id2, frame;
-    glm::mat4 trans;
+    Eigen::Matrix4d trans;
     FILE* f = fopen(filename.c_str(), "r");
     if (f != NULL) {
       char buffer[1024];
@@ -74,18 +74,17 @@ struct RGBDTrajectory {
         if (strlen(buffer) > 0 && buffer[0] != '#') {
           sscanf(buffer, "%d %d %d", &id1, &id2, &frame);
           fgets(buffer, 1024, f);
-          sscanf(buffer, "%f %f %f %f", &trans[0][0], &trans[0][1],
-                 &trans[0][2], &trans[0][3]);
+          sscanf(buffer, "%lf %lf %lf %lf", &trans(0, 0), &trans(0, 1),
+                 &trans(0, 2), &trans(0, 3));
           fgets(buffer, 1024, f);
-          sscanf(buffer, "%f %f %f %f", &trans[1][0], &trans[1][1],
-                 &trans[1][2], &trans[1][3]);
+          sscanf(buffer, "%lf %lf %lf %lf", &trans(1, 0), &trans(1, 1),
+                 &trans(1, 2), &trans(1, 3));
           fgets(buffer, 1024, f);
-          sscanf(buffer, "%f %f %f %f", &trans[2][0], &trans[2][1],
-                 &trans[2][2], &trans[2][3]);
+          sscanf(buffer, "%lf %lf %lf %lf", &trans(2, 0), &trans(2, 1),
+                 &trans(2, 2), &trans(2, 3));
           fgets(buffer, 1024, f);
-          sscanf(buffer, "%f %f %f %f", &trans[3][0], &trans[3][1],
-                 &trans[3][2], &trans[3][3]);
-
+          sscanf(buffer, "%lf %lf %lf %lf", &trans(3, 0), &trans(3, 1),
+                 &trans(3, 2), &trans(3, 3));
           data_.push_back(FramedTransformation(id1, id2, frame, trans));
         }
       }
@@ -94,22 +93,21 @@ struct RGBDTrajectory {
   }
   void SaveToFile(std::string filename) {
     FILE* f = fopen(filename.c_str(), "w");
-    for (size_t i = 0; i < data_.size(); i++) {
-      glm::mat4& trans = data_[i].transformation_;
+    for (int i = 0; i < (int)data_.size(); i++) {
+      Eigen::Matrix4d& trans = data_[i].transformation_;
       fprintf(f, "%d\t%d\t%d\n", data_[i].id1_, data_[i].id2_, data_[i].frame_);
-      fprintf(f, "%.8f %.8f %.8f %.8f\n", trans[0][0], trans[0][1], trans[0][2],
-              trans[0][3]);
-      fprintf(f, "%.8f %.8f %.8f %.8f\n", trans[1][0], trans[1][1], trans[1][2],
-              trans[1][3]);
-      fprintf(f, "%.8f %.8f %.8f %.8f\n", trans[2][0], trans[2][1], trans[2][2],
-              trans[2][3]);
-      fprintf(f, "%.8f %.8f %.8f %.8f\n", trans[3][0], trans[3][1], trans[3][2],
-              trans[3][3]);
+      fprintf(f, "%.8f %.8f %.8f %.8f\n", trans(0, 0), trans(0, 1), trans(0, 2),
+              trans(0, 3));
+      fprintf(f, "%.8f %.8f %.8f %.8f\n", trans(1, 0), trans(1, 1), trans(1, 2),
+              trans(1, 3));
+      fprintf(f, "%.8f %.8f %.8f %.8f\n", trans(2, 0), trans(2, 1), trans(2, 2),
+              trans(2, 3));
+      fprintf(f, "%.8f %.8f %.8f %.8f\n", trans(3, 0), trans(3, 1), trans(3, 2),
+              trans(3, 3));
     }
     fclose(f);
   }
 };
-
 void LoadKeyframeId(const std::string& index_path,
                     std::vector<int>* keyframe_id) {
   std::ifstream ifs(index_path);
@@ -159,6 +157,7 @@ void LoadImagePath(const std::string& image_dir,
 }  // namespace
 
 int main(void) {
+#if 1
   std::string data_dir = "../data/fountain_all/";
   std::string pose_path = data_dir + "fountain_key.log";
   std::string index_path = data_dir + "key.txt";
@@ -169,8 +168,8 @@ int main(void) {
 
   int width = 1280 / 2;
   int height = 1024 / 2;
-  glm::vec2 focal_length(1050.0f / 2, 1050.0f / 2);
-  glm::vec2 principal_point(639.5f / 2, 511.5f / 2);
+  Eigen::Vector2f focal_length(1050.0f / 2, 1050.0f / 2);
+  Eigen::Vector2f principal_point(639.5f / 2, 511.5f / 2);
 
   // load pose
   RGBDTrajectory keyframe_pose;
@@ -206,10 +205,10 @@ int main(void) {
     keyframes[i] = std::make_shared<simpletex::Keyframe>();
     keyframes[i]->id = keyframe_id[i];
 
-    glm::mat4 c2w =
-        glm::transpose(keyframe_pose.data_[i].transformation_);  // transpose
+    Eigen::Isometry3d c2w =
+        Eigen::Isometry3d(keyframe_pose.data_[i].transformation_);  // transpose
     keyframes[i]->camera = std::make_shared<simpletex::PinholeCamera>(
-        width, height, simpletex::Pose(c2w), principal_point, focal_length);
+        width, height, Eigen::Isometry3d(c2w), principal_point, focal_length);
 
     keyframes[i]->color_path = keyframe_image_path[i];
     keyframes[i]->color.Load(keyframes[i]->color_path);
@@ -229,6 +228,7 @@ int main(void) {
   vertex_colorizer.Colorize(info, output_mesh.get());
 
   output_mesh->WritePly(output_mesh_path);
+#endif  // 0
 
   return 0;
 }

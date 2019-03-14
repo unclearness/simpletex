@@ -11,8 +11,8 @@
 #include "src/timer.h"
 
 namespace {
-void PrepareRay(nanort::Ray<float>* ray, const glm::vec3& camera_pos_w,
-                const glm::vec3& ray_w) {
+void PrepareRay(nanort::Ray<float>* ray, const Eigen::Vector3f& camera_pos_w,
+                const Eigen::Vector3f& ray_w) {
   const float kFar = 1.0e+30f;
   ray->min_t = 0.0001f;
   ray->max_t = kFar;
@@ -29,7 +29,7 @@ void PrepareRay(nanort::Ray<float>* ray, const glm::vec3& camera_pos_w,
 }
 
 void BilinearInterpolation(float x, float y, const simpletex::Image3b& image,
-                           glm::vec3* color) {
+                           Eigen::Vector3f* color) {
   int tex_pos_min[2] = {0, 0};
   int tex_pos_max[2] = {0, 0};
   tex_pos_min[0] = static_cast<int>(std::floor(x));
@@ -82,8 +82,8 @@ float Median(const std::vector<T>& data) {
   return (data_tmp[n] + data_tmp[n + 1]) * 0.5f;
 }
 
-glm::vec3 MedianColor(const std::vector<glm::vec3>& colors) {
-  glm::vec3 median;
+Eigen::Vector3f MedianColor(const std::vector<Eigen::Vector3f>& colors) {
+  Eigen::Vector3f median;
   std::vector<std::vector<float>> ith_channel_list(3);
   for (const auto& color : colors) {
     for (int i = 0; i < 3; i++) {
@@ -115,7 +115,7 @@ T WeightedAverage(const std::vector<T>& data,
   std::vector<float> normalized_weights;
   NormalizeWeights(weights, &normalized_weights);
 
-  T weighted_average(0);
+  T weighted_average(0.0f, 0.0f, 0.0f);
   for (size_t i = 0; i < data.size(); i++) {
     weighted_average += (data[i] * normalized_weights[i]);
   }
@@ -181,13 +181,14 @@ VertexInfo::~VertexInfo() {}
 void VertexInfo::Update(const VertexInfoPerKeyframe& info) {
   visible_keyframes.push_back(info);
 }
+
 void VertexInfo::CalcStat() {
   if (visible_keyframes.empty()) {
     return;
   }
 
   // mean
-  mean_color = glm::vec3(0, 0, 0);
+  mean_color = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
   mean_distance = 0;
   mean_viewing_angle = 0;
   for (auto& kf : visible_keyframes) {
@@ -195,12 +196,12 @@ void VertexInfo::CalcStat() {
     mean_distance += kf.distance;
     mean_viewing_angle += kf.viewing_angle;
   }
-  mean_color /= visible_keyframes.size();
+  mean_color = mean_color / visible_keyframes.size();
   mean_distance /= visible_keyframes.size();
   mean_viewing_angle /= visible_keyframes.size();
 
   // make vectors
-  std::vector<glm::vec3> colors;
+  std::vector<Eigen::Vector3f> colors;
   std::vector<int> ids;
   std::vector<float> distances;
   std::vector<float> viewing_angles;
@@ -260,6 +261,7 @@ VisibilityInfo::VisibilityInfo(const Mesh& mesh) {
   vertex_info_list.resize(mesh.vertices().size());
   face_info_list.resize(mesh.vertex_indices().size());
 }
+
 VisibilityInfo::~VisibilityInfo() {}
 void VisibilityInfo::CalcStatVertexInfo() {
   Timer<> timer;
@@ -333,7 +335,7 @@ void VisibilityTester::set_mesh(std::shared_ptr<const Mesh> mesh) {
   flatten_vertices_.clear();
   flatten_faces_.clear();
 
-  const std::vector<glm::vec3>& vertices = mesh_->vertices();
+  const std::vector<Eigen::Vector3f>& vertices = mesh_->vertices();
   flatten_vertices_.resize(vertices.size() * 3);
   for (size_t i = 0; i < vertices.size(); i++) {
     flatten_vertices_[i * 3 + 0] = vertices[i][0];
@@ -341,7 +343,7 @@ void VisibilityTester::set_mesh(std::shared_ptr<const Mesh> mesh) {
     flatten_vertices_[i * 3 + 2] = vertices[i][2];
   }
 
-  const std::vector<glm::ivec3>& vertex_indices = mesh_->vertex_indices();
+  const std::vector<Eigen::Vector3i>& vertex_indices = mesh_->vertex_indices();
   flatten_faces_.resize(vertex_indices.size() * 3);
   for (size_t i = 0; i < vertex_indices.size(); i++) {
     flatten_faces_[i * 3 + 0] = vertex_indices[i][0];
@@ -349,6 +351,7 @@ void VisibilityTester::set_mesh(std::shared_ptr<const Mesh> mesh) {
     flatten_faces_[i * 3 + 2] = vertex_indices[i][2];
   }
 }
+
 bool VisibilityTester::PrepareMesh() {
   if (mesh_ == nullptr) {
     LOGE("mesh has not been set\n");
@@ -466,22 +469,24 @@ bool VisibilityTester::TestVertices(VisibilityInfo* info) const {
 #endif
   for (int i = 0; i < vertex_num; i++) {
     // convert vertex to camera space from world space
-    glm::vec3 camera_p = vertices[i];
-    keyframe_->camera->w2c().Transform(&camera_p);
+    Eigen::Vector3f camera_p =
+        keyframe_->camera->w2c().cast<float>() * vertices[i];
+#
     // project vertex to image space
-    glm::vec2 image_p;
+    Eigen::Vector2f image_p;
     float d;
     keyframe_->camera->Project(camera_p, &image_p, &d);
 
     // check if projected point is inside of image space of the current camera
-    if (d < 0 || image_p.x < 0 || keyframe_->color.width() - 1 < image_p.x ||
-        image_p.y < 0 || keyframe_->color.height() - 1 < image_p.y) {
+    if (d < 0 || image_p.x() < 0 ||
+        keyframe_->color.width() - 1 < image_p.x() || image_p.y() < 0 ||
+        keyframe_->color.height() - 1 < image_p.y()) {
       continue;
     }
 
     // nearest integer pixel index
-    int nn_x = static_cast<int>(std::round(image_p.x));
-    int nn_y = static_cast<int>(std::round(image_p.y));
+    int nn_x = static_cast<int>(std::round(image_p.x()));
+    int nn_y = static_cast<int>(std::round(image_p.y()));
 
     // mask and depth value check
     // nearest mask pixel should be valid (255)
@@ -495,14 +500,14 @@ bool VisibilityTester::TestVertices(VisibilityInfo* info) const {
     }
 
     // ray from projected point in image space
-    glm::vec3 ray_w, org_ray_w;
-    keyframe_->camera->ray_w(image_p.x, image_p.y, &ray_w);
-    keyframe_->camera->org_ray_w(image_p.x, image_p.y, &org_ray_w);
+    Eigen::Vector3f ray_w, org_ray_w;
+    keyframe_->camera->ray_w(image_p.x(), image_p.y(), &ray_w);
+    keyframe_->camera->org_ray_w(image_p.x(), image_p.y(), &org_ray_w);
     nanort::Ray<float> ray;
     PrepareRay(&ray, org_ray_w, ray_w);
 
     // back-face culling
-    float dot = glm::dot(-normals[i], ray_w);
+    float dot = normals[i].dot(-ray_w);
     float viewing_angle = std::acos(dot);
     // back-face if angle is larager than threshold
     if (option_.backface_culling_angle_rad_th < viewing_angle) {
@@ -515,12 +520,12 @@ bool VisibilityTester::TestVertices(VisibilityInfo* info) const {
     nanort::TriangleIntersection<> isect;
     bool hit = accel_.Traverse(ray, triangle_intersector, &isect);
 
-    glm::vec3 hit_pos_w;
+    Eigen::Vector3f hit_pos_w;
     if (hit) {
       // if there is a large distance beween hit position and vertex position,
       // the vertex is occluded by another face and should be ignored
       hit_pos_w = org_ray_w + ray_w * isect.t;
-      float dist = glm::distance(hit_pos_w, vertices[i]);
+      float dist = (hit_pos_w - vertices[i]).norm();
       if (dist > 0.00001) {
         continue;
       }
@@ -534,10 +539,11 @@ bool VisibilityTester::TestVertices(VisibilityInfo* info) const {
 
     // check depth difference between hit position and input depth
     if (option_.use_depth) {
-      glm::vec3 hit_pos_c = hit_pos_w;
-      keyframe_->camera->w2c().Transform(
-          &hit_pos_c);  // convert hit position to camera coordinate to get
-                        // depth value
+      Eigen::Vector3f hit_pos_c = hit_pos_w;
+      hit_pos_c = keyframe_->camera->w2c().cast<float>() *
+                  hit_pos_c;  // convert hit position to
+                              // camera coordinate to get
+      // depth value
       assert(0.0f <= hit_pos_c[2]);  // depth should be positive
       float diff = std::abs(hit_pos_c[2] - keyframe_->depth.at(nn_x, nn_y, 0));
       if (option_.max_depth_difference < diff) {
@@ -562,7 +568,7 @@ bool VisibilityTester::TestVertices(VisibilityInfo* info) const {
       vertex_info.color[1] = keyframe_->color.at(nn_x, nn_y, 1);
       vertex_info.color[2] = keyframe_->color.at(nn_x, nn_y, 2);
     } else if (option_.interp == ColorInterpolation::kBilinear) {
-      BilinearInterpolation(image_p.x, image_p.y, keyframe_->color,
+      BilinearInterpolation(image_p.x(), image_p.y(), keyframe_->color,
                             &vertex_info.color);
     }
     info->Update(i, vertex_info);

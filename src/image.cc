@@ -26,7 +26,7 @@
 namespace simpletex {
 
 void Depth2Gray(const Image1f& depth, Image1b* vis_depth, float min_d,
-                   float max_d) {
+                float max_d) {
   assert(min_d < max_d);
   assert(vis_depth != nullptr);
 

@@ -17,7 +17,7 @@ bool VertexColorizer::Colorize(const VisibilityInfo& info, Mesh* mesh) const {
 
   assert(info.vertex_info_list.size() == mesh->vertices().size());
 
-  std::vector<glm::vec3> vertex_colors;
+  std::vector<Eigen::Vector3f> vertex_colors;
 
   for (size_t i = 0; i < info.vertex_info_list.size(); i++) {
     vertex_colors.push_back(info.vertex_info_list[i].min_viewing_angle_color);

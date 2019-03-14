@@ -11,10 +11,10 @@
 #include <string>
 #include <vector>
 
+#include "glm/glm/glm.hpp"
 #include "include/camera.h"
 #include "include/mesh.h"
 #include "nanort/nanort.h"
-
 namespace simpletex {
 
 // Interpolation method in texture uv space
@@ -25,7 +25,7 @@ enum class ColorInterpolation {
 };
 
 struct VisibilityTesterOption {
-  float backface_culling_angle_rad_th{glm::radians(90.0f)};
+  float backface_culling_angle_rad_th{radians(90.0f)};
   bool use_mask{true};
   bool use_depth{true};
   ColorInterpolation interp{ColorInterpolation::kBilinear};
@@ -33,7 +33,7 @@ struct VisibilityTesterOption {
   bool collect_face_info{true};
   bool calc_stat_face_info{true};
 
-  float max_viewing_angle{glm::radians(90.0f)};
+  float max_viewing_angle{radians(90.0f)};
   float max_distance_from_camera_to_vertex{std::numeric_limits<float>::max()};
   float max_depth_difference{std::numeric_limits<float>::max()};
 
@@ -44,9 +44,9 @@ struct VisibilityTesterOption {
 
 struct VertexInfoPerKeyframe {
   int kf_id{-1};  // positive keyframe id
-  glm::vec3 color;
-  glm::vec2 projected_pos;      // projected 2d image space position
-  float viewing_angle{999.9f};  // radian
+  Eigen::Vector3f color;
+  Eigen::Vector2f projected_pos;  // projected 2d image space position
+  float viewing_angle{999.9f};    // radian
   float distance{-999.9f};  // distance along with ray from camera (not depth)
 
   VertexInfoPerKeyframe();
@@ -57,23 +57,23 @@ struct VertexInfo {
   std::vector<VertexInfoPerKeyframe> visible_keyframes;
 
   /*** gotten by Finalize() **************/
-  glm::vec3 mean_color;
-  glm::vec3 median_color;
+  Eigen::Vector3f mean_color;
+  Eigen::Vector3f median_color;
   int min_viewing_angle_index;
   int min_viewing_angle_id;
-  glm::vec3 min_viewing_angle_color;
+  Eigen::Vector3f min_viewing_angle_color;
 
-  glm::vec3
+  Eigen::Vector3f
       mean_viewing_angle_color;  // weighted average by inverse viewing angle
-  glm::vec3
+  Eigen::Vector3f
       median_viewing_angle_color;  // weighted median by inverse viewing angle
 
   int min_distance_index;
   int min_distance_id;
-  glm::vec3 min_distance_color;
+  Eigen::Vector3f min_distance_color;
 
-  glm::vec3 mean_distance_color;    // weighted average by inverse distance
-  glm::vec3 median_distance_color;  // weighted median by inverse distance
+  Eigen::Vector3f mean_distance_color;  // weighted average by inverse distance
+  Eigen::Vector3f median_distance_color;  // weighted median by inverse distance
 
   float mean_viewing_angle;
   float median_viewing_angle;
@@ -90,9 +90,9 @@ struct VertexInfo {
 
 struct FaceInfoPerKeyframe {
   int kf_id;
-  glm::vec3 mean_color;    // mean inside projected triangle
-  glm::vec3 median_color;  // median inside projected triangle
-  float area;              // are in projected image space. unit is pixel*pixel
+  Eigen::Vector3f mean_color;    // mean inside projected triangle
+  Eigen::Vector3f median_color;  // median inside projected triangle
+  float area;  // are in projected image space. unit is pixel*pixel
   float viewing_angle;
 
   FaceInfoPerKeyframe();
@@ -103,11 +103,11 @@ struct FaceInfo {
   std::vector<FaceInfoPerKeyframe> visible_keyframes;
 
   /*** gotten by Finalize() **************/
-  glm::vec3 mean_color;
-  glm::vec3 median_color;
-  glm::vec3 best_color_viewing_angle;
-  glm::vec3 mean_color_viewing_angle;
-  glm::vec3 median_color_viewing_angle;
+  Eigen::Vector3f mean_color;
+  Eigen::Vector3f median_color;
+  Eigen::Vector3f best_color_viewing_angle;
+  Eigen::Vector3f mean_color_viewing_angle;
+  Eigen::Vector3f median_color_viewing_angle;
   /**************************************/
 
   FaceInfo();

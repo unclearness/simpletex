@@ -35,14 +35,14 @@ if(OpenMP_FOUND)
 endif()
 
 # third_party directries
-set(GLM_INSTALL_DIR "third_party/glm" CACHE PATH "glm installed directory")
-message("GLM_INSTALL_DIR: ${GLM_INSTALL_DIR}") 
 set(NANORT_INSTALL_DIR "third_party/nanort" CACHE PATH "NanoRT installed directory")
 message("NANORT_INSTALL_DIR: ${NANORT_INSTALL_DIR}") 
 set(STB_INSTALL_DIR "third_party/stb" CACHE PATH "stb installed directory")
 message("STB_INSTALL_DIR: ${STB_INSTALL_DIR}") 
 set(TINYOBJLOADER_INSTALL_DIR "third_party/tinyobjloader" CACHE PATH "tinyobjloader installed directory")
 message("TINYOBJLOADER_INSTALL_DIR: ${TINYOBJLOADER_INSTALL_DIR}")
+set(EIGEN_INSTALL_DIR "third_party/eigen" CACHE PATH "eigen installed directory")
+message("EIGEN_INSTALL_DIR: ${EIGEN_INSTALL_DIR}") 
 
 # switch for optional libraries
 option(SIMPLETEX_USE_STB "Use stb to enable image i/o" ON)
@@ -87,18 +87,16 @@ add_library(${PUBLIC_LIB_NAME}
     STATIC
     include/common.h
     include/visibility_tester.h
-	include/vertex_colorizer.h
+    include/vertex_colorizer.h
     include/common.h
     include/camera.h
-    include/pose.h
     include/mesh.h
     include/image.h
     include/log.h
 
     src/visibility_tester.cc
-	src/vertex_colorizer.cc
+    src/vertex_colorizer.cc
     src/camera.cc
-    src/pose.cc
     src/mesh.cc
     src/image.cc
     src/timer.h
@@ -111,9 +109,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 SOURCE_GROUP("Public header files" FILES
     include/common.h
     include/visibility_tester.h
-	include/vertex_colorizer.h
+    include/vertex_colorizer.h
     include/camera.h
-    include/pose.h
     include/mesh.h
     include/image.h
     include/log.h
@@ -125,9 +122,8 @@ SOURCE_GROUP("Private header files" FILES
 
 SOURCE_GROUP("Source files" FILES
     src/visibility_tester.cc
-	src/vertex_colorizer.cc
+    src/vertex_colorizer.cc
     src/camera.cc
-    src/pose.cc
     src/mesh.cc
     src/image.cc
     src/log.cc
@@ -136,7 +132,7 @@ SOURCE_GROUP("Source files" FILES
 include_directories(${PUBLIC_LIB_NAME} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PUBLIC_LIB_NAME} third_party)
 include_directories(${PUBLIC_LIB_NAME} ${NANORT_INSTALL_DIR})
-include_directories(${PUBLIC_LIB_NAME} ${GLM_INSTALL_DIR})
+include_directories(${PUBLIC_LIB_NAME} ${EIGEN_INSTALL_DIR})
 include_directories(${PUBLIC_LIB_NAME} ${TINYOBJLOADER_INSTALL_DIR})
 include_directories(${PUBLIC_LIB_NAME} ${STB_INSTALL_DIR})
 
@@ -152,5 +148,3 @@ endif()
 
 target_link_libraries(${EXAMPLES_EXE}
     ${PUBLIC_LIB_NAME})
-
-    

@@ -144,6 +144,9 @@ add_executable(${EXAMPLES_EXE}
 
 if (WIN32)
     set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${EXAMPLES_EXE})
+	
+	# suppress C2338 for eigen
+	add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
 endif()
 
 target_link_libraries(${EXAMPLES_EXE}

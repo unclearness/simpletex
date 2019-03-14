@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "glm/glm/glm.hpp"
 #include "include/camera.h"
 #include "include/mesh.h"
 #include "nanort/nanort.h"

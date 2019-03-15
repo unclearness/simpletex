@@ -93,6 +93,7 @@ struct FaceInfoPerKeyframe {
   Eigen::Vector3f median_color;  // median inside projected triangle
   float area;  // are in projected image space. unit is pixel*pixel
   float viewing_angle;
+  float distance;
 
   FaceInfoPerKeyframe();
   ~FaceInfoPerKeyframe();
@@ -108,6 +109,20 @@ struct FaceInfo {
   Eigen::Vector3f mean_color_viewing_angle;
   Eigen::Vector3f median_color_viewing_angle;
   /**************************************/
+
+  int min_viewing_angle_index;
+  int min_viewing_angle_id;
+  //Eigen::Vector3f min_viewing_angle_color;
+
+  int min_distance_index;
+  int min_distance_id;
+  //Eigen::Vector3f min_distance_color;
+
+  int max_area_index;
+  int max_area_id;
+  //Eigen::Vector3f min_distance_color;
+
+  
 
   FaceInfo();
   ~FaceInfo();

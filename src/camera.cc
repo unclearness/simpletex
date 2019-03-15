@@ -174,7 +174,7 @@ void PinholeCamera::org_ray_c(float x, float y, Eigen::Vector3f* org) const {
 void PinholeCamera::org_ray_w(float x, float y, Eigen::Vector3f* org) const {
   (void)x;
   (void)y;
-  *org = c2w_.translation().cast<float>();
+  *org = c2w_.matrix().block<3,1>(0,3).cast<float>();
 }
 
 void PinholeCamera::ray_c(float x, float y, Eigen::Vector3f* dir) const {
@@ -186,7 +186,7 @@ void PinholeCamera::ray_c(float x, float y, Eigen::Vector3f* dir) const {
 
 void PinholeCamera::ray_w(float x, float y, Eigen::Vector3f* dir) const {
   ray_c(x, y, dir);
-  *dir = c2w_.rotation().cast<float>() * *dir;
+  *dir = c2w_.matrix().block<3,3>(0,0).cast<float>() * *dir;
 }
 
 OrthoCamera::OrthoCamera() : Camera() {}
@@ -232,10 +232,10 @@ void OrthoCamera::org_ray_c(float x, float y, Eigen::Vector3f* org) const {
 }
 
 void OrthoCamera::org_ray_w(float x, float y, Eigen::Vector3f* org) const {
-  *org = c2w_.translation().cast<float>();
+  *org = c2w_.matrix().block<3, 1>(0, 3).cast<float>();
 
-  Eigen::Vector3f x_direc = c2w_.rotation().row(0).cast<float>();
-  Eigen::Vector3f y_direc = c2w_.rotation().row(1).cast<float>();
+  Eigen::Vector3f x_direc = c2w_.matrix().block<3,3>(0,0).col(0).cast<float>();
+  Eigen::Vector3f y_direc = c2w_.matrix().block<3,3>(0,0).col(1).cast<float>();
 
   Eigen::Vector3f offset_x = (x - width_ * 0.5f) * x_direc;
   Eigen::Vector3f offset_y = (y - height_ * 0.5f) * y_direc;
@@ -257,7 +257,7 @@ void OrthoCamera::ray_w(float x, float y, Eigen::Vector3f* dir) const {
   (void)x;
   (void)y;
   // extract z direction of camera pose
-  *dir = Eigen::Vector3f(c2w_.rotation().cast<float>().row(2));
+  *dir = Eigen::Vector3f(c2w_.matrix().block<3,3>(0,0).cast<float>().col(2));
 }
 
 }  // namespace simpletex

@@ -96,6 +96,7 @@ add_library(${PUBLIC_LIB_NAME}
     include/common.h
     include/visibility_tester.h
     include/vertex_colorizer.h
+    include/view_patch_generator.h
     include/common.h
     include/camera.h
     include/mesh.h
@@ -104,6 +105,7 @@ add_library(${PUBLIC_LIB_NAME}
 
     src/visibility_tester.cc
     src/vertex_colorizer.cc
+    src/view_patch_generator.cc
     src/camera.cc
     src/mesh.cc
     src/image.cc
@@ -118,6 +120,7 @@ SOURCE_GROUP("Public header files" FILES
     include/common.h
     include/visibility_tester.h
     include/vertex_colorizer.h
+    include/ view_patch_generator.h
     include/camera.h
     include/mesh.h
     include/image.h
@@ -131,6 +134,7 @@ SOURCE_GROUP("Private header files" FILES
 SOURCE_GROUP("Source files" FILES
     src/visibility_tester.cc
     src/vertex_colorizer.cc
+    src/view_patch_generator.cc
     src/camera.cc
     src/mesh.cc
     src/image.cc

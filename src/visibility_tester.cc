@@ -258,7 +258,7 @@ void FaceInfo::CalcStat() {
   }
 
   // make vectors
-  //std::vector<Eigen::Vector3f> colors;
+  // std::vector<Eigen::Vector3f> colors;
   std::vector<int> ids;
   std::vector<float> distances;
   std::vector<float> viewing_angles;
@@ -266,7 +266,7 @@ void FaceInfo::CalcStat() {
   std::vector<float> inv_distances;
   std::vector<float> inv_viewing_angles;
   for (auto& kf : visible_keyframes) {
-    //colors.push_back(kf.color);
+    // colors.push_back(kf.color);
     ids.push_back(kf.kf_id);
     distances.push_back(kf.distance);
     viewing_angles.push_back(kf.viewing_angle);
@@ -281,20 +281,17 @@ void FaceInfo::CalcStat() {
   min_viewing_angle_index = static_cast<int>(
       std::distance(viewing_angles.begin(), min_viewing_angle_it));
   min_viewing_angle_id = visible_keyframes[min_viewing_angle_index].kf_id;
-  //min_viewing_angle_color = visible_keyframes[min_viewing_angle_index].color;
+  // min_viewing_angle_color = visible_keyframes[min_viewing_angle_index].color;
 
   auto min_distance_it = std::min_element(distances.begin(), distances.end());
   min_distance_index =
       static_cast<int>(std::distance(distances.begin(), min_distance_it));
   min_distance_id = visible_keyframes[min_distance_index].kf_id;
-  //min_distance_color = visible_keyframes[min_distance_index].color;
+  // min_distance_color = visible_keyframes[min_distance_index].color;
 
   auto max_area_it = std::max_element(areas.begin(), areas.end());
-  max_area_index =
-      static_cast<int>(std::distance(areas.begin(), max_area_it));
+  max_area_index = static_cast<int>(std::distance(areas.begin(), max_area_it));
   max_area_id = visible_keyframes[max_area_index].kf_id;
-
-
 }
 
 VisibilityInfo::VisibilityInfo() {}
@@ -512,7 +509,7 @@ bool VisibilityTester::TestVertices(VisibilityInfo* info) const {
     // convert vertex to camera space from world space
     Eigen::Vector3f camera_p =
         keyframe_->camera->w2c().cast<float>() * vertices[i];
-#
+
     // project vertex to image space
     Eigen::Vector2f image_p;
     float d;
@@ -623,8 +620,8 @@ bool VisibilityTester::TestVertices(VisibilityInfo* info) const {
 bool VisibilityTester::TestFaces(VisibilityInfo* info) const {
   Timer<> timer;
   timer.Start();
-  //const auto& vertices = mesh_->vertices();
-  //const auto& face_normals = mesh_->face_normals();
+  // const auto& vertices = mesh_->vertices();
+  // const auto& face_normals = mesh_->face_normals();
   const auto& faces = mesh_->vertex_indices();
   int face_num = static_cast<int>(faces.size());
 
@@ -632,7 +629,6 @@ bool VisibilityTester::TestFaces(VisibilityInfo* info) const {
 #pragma omp parallel for schedule(dynamic, 1)
 #endif
   for (int i = 0; i < face_num; i++) {
-
     bool visible_all = true;
 
     float viewing_angle = 0.0f;
@@ -646,10 +642,10 @@ bool VisibilityTester::TestFaces(VisibilityInfo* info) const {
         break;
       }
       // todo: store as map and avoid search
-      const auto result = std::find_if(
+      const auto& result = std::find_if(
           vinfo.visible_keyframes.begin(), vinfo.visible_keyframes.end(),
           [&](const auto& a) { return a.kf_id == keyframe_->id; });
-      //assert(result != vinfo.visible_keyframes.end());
+      // assert(result != vinfo.visible_keyframes.end());
       if (result == vinfo.visible_keyframes.end()) {
         visible_all = false;
         break;
@@ -659,9 +655,9 @@ bool VisibilityTester::TestFaces(VisibilityInfo* info) const {
 
       ppos_list[j] = result->projected_pos;
     }
-    
+
     if (!visible_all) {
-        continue;
+      continue;
     }
 
     viewing_angle /= 3.0f;
@@ -671,15 +667,23 @@ bool VisibilityTester::TestFaces(VisibilityInfo* info) const {
     FaceInfoPerKeyframe face_info;
     face_info.kf_id = keyframe_->id;
     face_info.viewing_angle = viewing_angle;
+    face_info.projected_tri = ppos_list;
     auto v0 = (ppos_list[1] - ppos_list[0]);
     auto v1 = (ppos_list[2] - ppos_list[0]);
     face_info.area = std::abs(0.5f * (v0[0] * v1[1] - v0[1] * v1[0]));
+    for (int j = 0; j < 2; j++) {
+      face_info.bmax[j] = static_cast<int>(std::round(std::max(
+          ppos_list[0][j], std::max(ppos_list[1][j], ppos_list[2][j]))));
+      face_info.bmin[j] = static_cast<int>(std::round(std::min(
+          ppos_list[0][j], std::min(ppos_list[1][j], ppos_list[2][j]))));
+      assert(face_info.bmin[j] <= face_info.bmax[j]);
+
+    }
     face_info.distance = distance;
     // todo
-    //face_info.mean_color;
-    //face_info.median_color;
+    // face_info.mean_color;
+    // face_info.median_color;
     info->Update(i, face_info);
-
   }
   timer.End();
   LOGI("face information collection: %.1f msecs\n", timer.elapsed_msec());

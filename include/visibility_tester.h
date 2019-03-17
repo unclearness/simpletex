@@ -91,7 +91,9 @@ struct FaceInfoPerKeyframe {
   int kf_id;
   Eigen::Vector3f mean_color;    // mean inside projected triangle
   Eigen::Vector3f median_color;  // median inside projected triangle
-  float area;  // are in projected image space. unit is pixel*pixel
+  std::array<Eigen::Vector2f, 3> projected_tri; // projected triangle 2d posiitons
+  float area;  // area of triangle in projected image space. unit is pixel*pixel
+  Eigen::Vector2i bmin, bmax; // integer bounding box for projected triangle
   float viewing_angle;
   float distance;
 

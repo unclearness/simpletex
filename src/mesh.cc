@@ -523,6 +523,99 @@ bool Mesh::WritePly(const std::string& ply_path) const {
   return true;
 }
 
+bool Mesh::WriteObj(const std::string& obj_dir, const std::string& obj_basename,
+                    const std::string& mtl_basename,
+                    const std::string& tex_basename) const {
+  std::string mtl_name = mtl_basename + ".tml";
+  if (mtl_basename.empty()) {
+    mtl_name = obj_basename + ".mtl";
+  }
+  std::string mtl_path = obj_dir + "/" + mtl_name;
+
+  std::string tex_name = tex_basename + ".png";
+  if (tex_basename.empty()) {
+    tex_name = obj_basename + ".png";
+  }
+  std::string tex_path = obj_dir + "/" + tex_name;
+
+  std::string obj_path = obj_dir + "/" + obj_basename + ".obj";
+
+  // write obj
+  {
+    std::ofstream ofs(obj_path);
+    if (ofs.fail()) {
+      LOGE("couldn't open obj path: %s\n", obj_path.c_str());
+      return false;
+    }
+
+    ofs << "mtllib ./" << mtl_name << std::endl << std::endl;
+
+    // vertices
+    for (const auto& v : vertices_) {
+      ofs << "v " << v.x() << " " << v.y() << " " << v.z() << " 1.0"
+          << std::endl;
+    }
+
+    // uv
+    for (const auto& vt : uv_) {
+      ofs << "vt " << vt.x() << " " << vt.y() << " 0" << std::endl;
+    }
+
+    // vertex normals
+    for (const auto& vn : normals_) {
+      ofs << "vn " << vn.x() << " " << vn.y() << " " << vn.z() << std::endl;
+    }
+
+    // indices
+    bool write_uv_indices = !uv_indices_.empty();
+    bool write_normal_indices = !normal_indices_.empty();
+    for (size_t i = 0; i < vertex_indices_.size(); i++) {
+      ofs << "f";
+      for (int j = 0; j < 3; j++) {
+        ofs << " " << std::to_string(vertex_indices_[i][j] + 1);
+        if (!write_uv_indices && !write_normal_indices) {
+          continue;
+        }
+        ofs << "/";
+        if (write_uv_indices) {
+          ofs << std::to_string(uv_indices_[i][j] + 1);
+        }
+        ofs << "/" << std::to_string(normal_indices_[i][j] + 1);
+      }
+      ofs << std::endl;
+    }
+
+    ofs.close();
+  }
+
+  // write mtl
+  {
+    std::ofstream ofs(mtl_path);
+    if (ofs.fail()) {
+      LOGE("couldn't open mtl path: %s\n", mtl_path.c_str());
+      return false;
+    }
+
+    ofs << "property float x\n"
+           "property float y\n"
+           "property float z\n"
+           "newmtl Textured\n"
+           "Ka 1.000 1.000 1.000\n"
+           "Kd 1.000 1.000 1.000\n"
+           "Ks 0.000 0.000 0.000\n"
+           "d 1.0\n"
+           "illum 2\n";
+    ofs << "map_Kd " + tex_name << std::endl;
+
+    ofs.close();
+  }
+
+  // write texture
+  diffuse_tex_.WritePng(tex_path);
+
+  return true;
+}
+
 std::shared_ptr<Mesh> MakeCube(const Eigen::Vector3f& length,
                                const Eigen::Matrix3f& R,
                                const Eigen::Vector3f& t) {

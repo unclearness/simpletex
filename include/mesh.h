@@ -81,9 +81,9 @@ class Mesh {
 #endif
   bool LoadPly(const std::string& ply_path);
   bool WritePly(const std::string& ply_path) const;
-  bool WriteObj(const std::string& obj_dir, const std::string& obj_name,
-                const std::string& mtl_name = "",
-                const std::string& tex_name = "") const;
+  bool WriteObj(const std::string& obj_dir, const std::string& obj_basename,
+                const std::string& mtl_basename = "",
+                const std::string& tex_basename = "") const;
 };
 
 // make cube with 24 vertices

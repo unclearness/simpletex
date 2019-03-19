@@ -468,6 +468,8 @@ bool Mesh::LoadPly(const std::string& ply_path) {
 
   CalcNormal();
 
+  CalcStats();
+
   return true;
 }
 

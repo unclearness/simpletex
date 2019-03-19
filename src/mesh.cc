@@ -523,6 +523,7 @@ bool Mesh::WritePly(const std::string& ply_path) const {
   return true;
 }
 
+#ifdef SIMPLETEX_USE_STB
 bool Mesh::WriteObj(const std::string& obj_dir, const std::string& obj_basename,
                     const std::string& mtl_basename,
                     const std::string& tex_basename) const {
@@ -615,6 +616,7 @@ bool Mesh::WriteObj(const std::string& obj_dir, const std::string& obj_basename,
 
   return true;
 }
+#endif
 
 std::shared_ptr<Mesh> MakeCube(const Eigen::Vector3f& length,
                                const Eigen::Matrix3f& R,

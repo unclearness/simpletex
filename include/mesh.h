@@ -81,9 +81,11 @@ class Mesh {
 #endif
   bool LoadPly(const std::string& ply_path);
   bool WritePly(const std::string& ply_path) const;
+#ifdef SIMPLETEX_USE_STB
   bool WriteObj(const std::string& obj_dir, const std::string& obj_basename,
                 const std::string& mtl_basename = "",
                 const std::string& tex_basename = "") const;
+#endif
 };
 
 // make cube with 24 vertices

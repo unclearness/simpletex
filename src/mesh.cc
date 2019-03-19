@@ -527,7 +527,7 @@ bool Mesh::WritePly(const std::string& ply_path) const {
 bool Mesh::WriteObj(const std::string& obj_dir, const std::string& obj_basename,
                     const std::string& mtl_basename,
                     const std::string& tex_basename) const {
-  std::string mtl_name = mtl_basename + ".tml";
+  std::string mtl_name = mtl_basename + ".mtl";
   if (mtl_basename.empty()) {
     mtl_name = obj_basename + ".mtl";
   }
